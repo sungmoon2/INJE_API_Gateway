@@ -49,6 +49,11 @@ config/wallets/
 config/*.json
 !config/connection-profile.example.json
 
+# GitHub and development session configuration
+config/github-config.json
+config/development-guide.md
+config/*-session-*.json
+
 # Redis dump files
 dump.rdb
 
