@@ -401,7 +401,7 @@ INJE API GATEWAY 프로젝트 최종 완성 요약 로그
 
 15.2 네트워크 연결성 검증:
 ✅ LAN 환경 접근: http://192.168.0.25:3001
-✅ 인터넷 터널링: https://e16845a89219.ngrok-free.app
+✅ 인터넷 터널링: https://[REDACTED].ngrok-free.app
 ✅ 모바일 네트워크: 4G/5G 환경에서 접근 성공
 ✅ 네트워크 격리: 서로 다른 대역 간 격리 확인
 
