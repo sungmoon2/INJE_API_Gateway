@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  # Redis 서비스
+  redis:
+    image: redis:7.2-alpine
+    container_name: inje-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - inje-network
+
+  # API Gateway 서비스
+  api-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: inje-api-gateway
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - FABRIC_CONNECTION_PROFILE=./config/connection-profile.json
+      - FABRIC_CHANNEL_NAME=newportchannel
+      - FABRIC_CHAINCODE_NAME=inje-chaincode
+      - FABRIC_CONTRACT_NAME=LogisticsContract
+      - API_KEYS=kuls-api-key-2025,test-api-key,kuls-test-key-2025
+      - WEBHOOK_SECRET=inje-webhook-secret-2025
+    volumes:
+      - ./logs:/app/logs
+      - ./wallet:/app/wallet
+      - ./config:/app/config
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - inje-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # KULS 시뮬레이터 서비스 (테스트용)
+  kuls-simulator:
+    build:
+      context: .
+      dockerfile: Dockerfile.simulator
+    container_name: kuls-simulator
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=development
+      - API_GATEWAY_URL=http://api-gateway:3000
+      - WEBHOOK_CALLBACK_URL=http://kuls-simulator:4000/webhook
+    depends_on:
+      - api-gateway
+    networks:
+      - inje-network
+    restart: unless-stopped
+
+volumes:
+  redis-data:
+    driver: local
+
+networks:
+  inje-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

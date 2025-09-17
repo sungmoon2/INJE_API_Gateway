@@ -1,0 +1,122 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# 기본 패키지 설치
+RUN npm init -y
+RUN npm install express cors axios winston
+
+# 시뮬레이터 앱 생성
+COPY <<EOF /app/simulator.js
+const express = require('express');
+const cors = require('cors');
+const axios = require('axios');
+const winston = require('winston');
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.json()
+  ),
+  transports: [
+    new winston.transports.Console()
+  ]
+});
+
+const API_GATEWAY_URL = process.env.API_GATEWAY_URL || 'http://localhost:3000';
+const WEBHOOK_CALLBACK_URL = process.env.WEBHOOK_CALLBACK_URL || 'http://localhost:4000/webhook';
+const API_KEY = 'kuls-api-key-2025';
+
+// 웹훅 엔드포인트
+app.post('/webhook', (req, res) => {
+  logger.info('Webhook received:', req.body);
+  
+  // 서명 검증 (실제 구현에서는 HMAC 검증 추가)
+  const signature = req.headers['x-inje-signature'];
+  const timestamp = req.headers['x-inje-timestamp'];
+  
+  logger.info('Webhook signature:', signature);
+  logger.info('Webhook timestamp:', timestamp);
+  
+  res.status(200).json({ success: true, message: 'Webhook received' });
+});
+
+// 테스트 트랜잭션 제출
+app.post('/test/submit', async (req, res) => {
+  try {
+    const correlationId = \`test-\${Date.now()}-\${Math.random().toString(36).substring(7)}\`;
+    
+    const payload = {
+      correlationId,
+      containerId: 'CONTAINER-001',
+      instruction: 'LOAD_CARGO',
+      source: 'KULS_SYSTEM',
+      callbackUrl: WEBHOOK_CALLBACK_URL
+    };
+    
+    logger.info('Submitting test transaction:', payload);
+    
+    const response = await axios.post(
+      \`\${API_GATEWAY_URL}/api/v1/transactions/submit\`,
+      payload,
+      {
+        headers: {
+          'X-API-Key': API_KEY,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+    
+    logger.info('Transaction submitted successfully:', response.data);
+    res.json(response.data);
+    
+  } catch (error) {
+    logger.error('Transaction submission failed:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 상태 조회
+app.get('/test/status/:correlationId', async (req, res) => {
+  try {
+    const { correlationId } = req.params;
+    
+    const response = await axios.get(
+      \`\${API_GATEWAY_URL}/api/v1/transactions/status/\${correlationId}\`,
+      {
+        headers: {
+          'X-API-Key': API_KEY
+        }
+      }
+    );
+    
+    res.json(response.data);
+    
+  } catch (error) {
+    logger.error('Status check failed:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 헬스체크
+app.get('/health', (req, res) => {
+  res.json({ status: 'healthy', timestamp: new Date().toISOString() });
+});
+
+// 서버 시작
+const PORT = 4000;
+app.listen(PORT, () => {
+  logger.info(\`KULS Simulator running on port \${PORT}\`);
+  logger.info(\`API Gateway URL: \${API_GATEWAY_URL}\`);
+  logger.info(\`Webhook Callback URL: \${WEBHOOK_CALLBACK_URL}\`);
+});
+EOF
+
+EXPOSE 4000
+
+CMD ["node", "simulator.js"]
