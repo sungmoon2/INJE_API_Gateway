@@ -11,6 +11,7 @@ yarn-error.log*
 dist/
 *.log
 logs/
+!docs/logs/
 *.pid
 *.seed
 *.pid.lock
