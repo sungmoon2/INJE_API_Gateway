@@ -7,7 +7,7 @@
   "organizations": {
     "CFS1MSP": {
       "mspid": "CFS1MSP",
-      "peers": ["peer0.cfs1.example.com", "peer1.cfs1.example.com", "peer2.cfs1.example.com"],
+      "peers": ["peer0.cfs1.example.com", "peer1.cfs1.example.com"],
       "certificateAuthorities": ["ca.cfs1.example.com"]
     },
     "CY1MSP": {
@@ -77,12 +77,6 @@
           "eventSource": true
         },
         "peer1.cfs1.example.com": {
-          "endorsingPeer": true,
-          "chaincodeQuery": true,
-          "ledgerQuery": true,
-          "eventSource": true
-        },
-        "peer2.cfs1.example.com": {
           "endorsingPeer": true,
           "chaincodeQuery": true,
           "ledgerQuery": true,

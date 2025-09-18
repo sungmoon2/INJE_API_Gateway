@@ -221,60 +221,8 @@ export class FabricService {
         return await this.submitRealBlockchainTransaction(correlationId, payload);
       }
 
-      // 개발 환경에서는 모의 트랜잭션 생성
-      if (process.env.NODE_ENV === 'development' || !this.contract) {
-        return await this.submitMockTransaction(correlationId, payload);
-      }
-
-      // 실제 트랜잭션 제출
-      const txProposal = this.contract.createTransaction('submitLogisticsData');
-      const txId = txProposal.getTransactionId();
-
-      // Redis에 PENDING 상태 저장
-      const pendingResult: TransactionResult = {
-        txId,
-        status: 'PENDING'
-      };
-
-      await this.redis.setex(
-        `tx:${correlationId}`,
-        3600,
-        JSON.stringify(pendingResult)
-      );
-
-      await this.redis.setex(
-        `txid:${txId}`,
-        3600,
-        correlationId
-      );
-
-      // 체인코드 호출
-      await txProposal.submit(
-        JSON.stringify({
-          correlationId,
-          ...payload
-        })
-      );
-
-      // 결과 처리
-      const txResult: TransactionResult = {
-        txId,
-        status: 'SUBMITTED'
-      };
-
-      // Redis 업데이트
-      await this.redis.setex(
-        `tx:${correlationId}`,
-        3600,
-        JSON.stringify(txResult)
-      );
-
-      this.logger.info(`Transaction submitted: ${txId}`, {
-        correlationId,
-        payload
-      });
-
-      return txResult;
+      // FABRIC_USE_REAL_BLOCKCHAIN이 false이거나 설정되지 않은 경우 모의 트랜잭션 사용
+      return await this.submitMockTransaction(correlationId, payload);
     } catch (error) {
       this.logger.error('Transaction submission failed:', error);
 
