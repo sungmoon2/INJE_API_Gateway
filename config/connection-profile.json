@@ -1,0 +1,100 @@
+{
+  "name": "socfai-network-cli-identical",
+  "version": "1.0.0",
+  "client": {
+    "organization": "CFS1MSP"
+  },
+  "organizations": {
+    "CFS1MSP": {
+      "mspid": "CFS1MSP",
+      "peers": ["peer0.cfs1.example.com", "peer1.cfs1.example.com", "peer2.cfs1.example.com"],
+      "certificateAuthorities": ["ca.cfs1.example.com"]
+    },
+    "CY1MSP": {
+      "mspid": "CY1MSP",
+      "peers": ["peer0.cy1.example.com"]
+    }
+  },
+  "orderers": {
+    "orderer.example.com": {
+      "url": "grpcs://localhost:7050",
+      "tlsCACerts": {
+        "path": "/home/minsujo/fabric-network/crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"
+      },
+      "grpcOptions": {
+        "ssl-target-name-override": "orderer.example.com"
+      }
+    }
+  },
+  "peers": {
+    "peer0.cfs1.example.com": {
+      "url": "grpcs://localhost:7051",
+      "tlsCACerts": {
+        "path": "/home/minsujo/fabric-network/crypto-config/peerOrganizations/cfs1.example.com/peers/peer0.cfs1.example.com/tls/ca.crt"
+      },
+      "grpcOptions": {
+        "ssl-target-name-override": "peer0.cfs1.example.com"
+      }
+    },
+    "peer1.cfs1.example.com": {
+      "url": "grpcs://localhost:8051",
+      "tlsCACerts": {
+        "path": "/home/minsujo/fabric-network/crypto-config/peerOrganizations/cfs1.example.com/peers/peer1.cfs1.example.com/tls/ca.crt"
+      },
+      "grpcOptions": {
+        "ssl-target-name-override": "peer1.cfs1.example.com"
+      }
+    },
+    "peer2.cfs1.example.com": {
+      "url": "grpcs://localhost:9051",
+      "tlsCACerts": {
+        "path": "/home/minsujo/fabric-network/crypto-config/peerOrganizations/cfs1.example.com/peers/peer2.cfs1.example.com/tls/ca.crt"
+      },
+      "grpcOptions": {
+        "ssl-target-name-override": "peer2.cfs1.example.com"
+      }
+    },
+    "peer0.cy1.example.com": {
+      "url": "grpcs://192.168.0.5:7051",
+      "tlsCACerts": {
+        "path": "/home/minsujo/fabric-network/crypto-config/peerOrganizations/cy1.example.com/peers/peer0.cy1.example.com/tls/ca.crt"
+      },
+      "grpcOptions": {
+        "ssl-target-name-override": "peer0.cy1.example.com",
+        "grpc.keepalive_time_ms": 120000,
+        "grpc.keepalive_timeout_ms": 20000
+      }
+    }
+  },
+  "channels": {
+    "newportchannel": {
+      "orderers": ["orderer.example.com"],
+      "peers": {
+        "peer0.cfs1.example.com": {
+          "endorsingPeer": true,
+          "chaincodeQuery": true,
+          "ledgerQuery": true,
+          "eventSource": true
+        },
+        "peer1.cfs1.example.com": {
+          "endorsingPeer": true,
+          "chaincodeQuery": true,
+          "ledgerQuery": true,
+          "eventSource": true
+        },
+        "peer2.cfs1.example.com": {
+          "endorsingPeer": true,
+          "chaincodeQuery": true,
+          "ledgerQuery": true,
+          "eventSource": true
+        },
+        "peer0.cy1.example.com": {
+          "endorsingPeer": true,
+          "chaincodeQuery": true,
+          "ledgerQuery": true,
+          "eventSource": true
+        }
+      }
+    }
+  }
+}

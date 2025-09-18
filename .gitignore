@@ -48,6 +48,7 @@ config/crypto-config/
 config/wallets/
 config/*.json
 !config/connection-profile.example.json
+!config/connection-profile.json
 
 # GitHub and development session configuration
 config/github-config.json
